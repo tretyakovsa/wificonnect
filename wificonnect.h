@@ -16,17 +16,18 @@
 
 class WIFICONNECT : public ESP8266WiFiClass {
   public:
+  // Инициализация
     void init(String ssid, String ssidPass, String ssidAP, String ssidApPass, String _ssidStart),
 	     init(String ssid, String ssidPass, String ssidAP, String ssidApPass),
-         start(),
-         isConnect(),
-         startSTA(),
-         startAP(),
-         anotherDev(),
-		 DNSRequest(),
+         start(), // Подключить к роутеру если не удачно выдти в режим AP
+         startSTA(), // Подключится к роутеру
+		 isConnect(), // Попыки подключится к роуетеру
+         anotherDev(), // Подключение другого модуля к роутеру используя данные этого
+		 startAP(),  // Запустить точку доступа
+		 DNSRequest(), // Обработка DNS сервера в режиме AP
          stop();
 
-    String scan(boolean Async),
+    String scan(boolean Async), // Получить список сетей в эфире
 	       network(),
 		   StringIP(),
            getURL(String urls);
@@ -50,7 +51,7 @@ class WIFICONNECT : public ESP8266WiFiClass {
            _getway,
            _dns,
            _emptyS,
-		   _result;
+		   _net;
     Ticker WiFiTimer;
 	DNSServer dnsServer;
 

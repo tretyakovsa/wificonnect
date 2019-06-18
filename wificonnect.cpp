@@ -63,8 +63,7 @@ void WIFICONNECT::startSTA() {
 		}
 
 }
-
-
+// Запустить точку доступа
 void WIFICONNECT::startAP() {
  IPAddress apIP(192, 168, 4, 1);
   IPAddress staticGateway(192, 168, 4, 1);
@@ -74,6 +73,11 @@ void WIFICONNECT::startAP() {
   WiFi.mode(WIFI_AP);
   dnsServer.start(53, "*", apIP);
    _StaAp=false;
+}
+// Обработка DNS сервера в режиме AP
+void WIFICONNECT::DNSRequest() {
+	//if (!_StaAp)
+		dnsServer.processNextRequest();
 }
 
 void WIFICONNECT::stop() {
@@ -108,14 +112,14 @@ void WIFICONNECT::anotherDev() {
   //delay(15000);
 
   String gatewayIP = WiFi.gatewayIP().toString();
-  Serial.println("gatewayIP=");
-  Serial.println(gatewayIP);
+  //Serial.println("gatewayIP=");
+  //Serial.println(gatewayIP);
   String URL = "http://192.168.4.1/ssid?ssid="+ssid+"&ssidPass="+pass;
-  Serial.println(URL);
-  Serial.println(getURL(URL));
+  //Serial.println(URL);
+  //Serial.println(getURL(URL));
   URL = "http://192.168.4.1/restart?device=ok";
-  Serial.println(URL);
-  Serial.println(getURL(URL));
+  //Serial.println(URL);
+  //Serial.println(getURL(URL));
 
   _ssid = ssid;
   _ssidPass = pass;
@@ -131,7 +135,7 @@ void WIFICONNECT::isConnect() {
    while (--tries && WiFi.status() != WL_CONNECTED)
   {
     delay(500);
-    Serial.print(".");
+    //Serial.print(".");
 	//Serial.println(WiFi.status());
   }
   //Serial.println(WiFi.status());
@@ -143,7 +147,7 @@ boolean WIFICONNECT::modeSTA(){
 }
 
 String WIFICONNECT::network(){
-	return _result;
+	return _net;
 }
 
 String WIFICONNECT::scan(boolean Async) {
@@ -153,44 +157,40 @@ String WIFICONNECT::scan(boolean Async) {
 	//Serial.println(n);
   switch (n) {
     case -2: // Не запущено
-    Serial.println("SkanStart");
+    //Serial.println("SkanStart");
       WiFi.scanNetworks(true, true);
-      return _result;
+      return _net;
       break;
     case -1: // Выполняется
-    Serial.println("SkanWork");
-      return _result;
+    //Serial.println("SkanWork");
+      return _net;
       break;
     default:
-	Serial.println("SkanUpdate");
-     String net="{\"networks\":["; // Начало строки для списка сетей
+	//Serial.println("SkanUpdate");
+     _net="{\"networks\":["; // Начало строки для списка сетей
  for (uint8_t i = 0; i < n; i++) { // Получаем все сети по порядку
-	 net +="{\"ssid\":\""; // Начало раздела ключей отдельной сети
+	 _net +="{\"ssid\":\""; // Начало раздела ключей отдельной сети
 	 String ssid = WiFi.SSID(i); // Добавим ключ ssid текущей сети
 	 if (ssid == _ssid) _ssidOn=true; // Если сеть которую ищем найдена поднимим флаг
 	 if (ssid == _ssidStart) _ssidStartOn=true; // Если сеть которую ищем найдена поднимим флаг
-	 net += ssid + "\","; // Добавим ssid текущей сети в список
-	 net +="\"pass\":\""; // Добавим ключ pass текущей сети
-	 net += (WiFi.encryptionType(i) == ENC_TYPE_NONE) ? "" : "*"; // Если сеть открыта
-	 net += "\",";
-	 net +="\"dmb\":";  // Добавим ключ dmb текущей сети
-	 net += WiFi.RSSI(i); // Добавим dmb текущей сети в список
-	 net += "}"; // Закроим раздел текущей сети
-	 if (n != i+1) net += ",\r\n"; // Если сеть не последняя добавим ,
+	 _net += ssid + "\","; // Добавим ssid текущей сети в список
+	 _net +="\"pass\":\""; // Добавим ключ pass текущей сети
+	 _net += (WiFi.encryptionType(i) == ENC_TYPE_NONE) ? "" : "*"; // Если сеть открыта
+	 _net += "\",";
+	 _net +="\"dmb\":";  // Добавим ключ dmb текущей сети
+	 _net += WiFi.RSSI(i); // Добавим dmb текущей сети в список
+	 _net += "}"; // Закроем раздел текущей сети
+	 if (n != i+1) _net += ",\r\n"; // Если сеть не последняя добавим ,
  }
- net += "]}"; // Закончим список сетей
-      _result = net;
+ _net += "]}"; // Закончим список сетей
       WiFi.scanDelete();
-      return _result;
+      return _net;
   }
 }
 
 boolean WIFICONNECT::ssidStartOn() {
 
 	return _ssidStartOn;
-}
-void WIFICONNECT::DNSRequest() {
-	dnsServer.processNextRequest();
 }
 
 boolean WIFICONNECT::ssidOn() {
