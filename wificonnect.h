@@ -19,7 +19,7 @@ class WIFICONNECT : public ESP8266WiFiClass {
   // Инициализация
     void init(String ssid, String ssidPass, String ssidAP, String ssidApPass, String _ssidStart),
 	     init(String ssid, String ssidPass, String ssidAP, String ssidApPass),
-         start(), // Подключить к роутеру если не удачно выдти в режим AP
+         start(), // Подключить к роутеру если не удачно выход в режим AP
          startSTA(), // Подключится к роутеру
 		 isConnect(), // Попыки подключится к роуетеру
          anotherDev(), // Подключение другого модуля к роутеру используя данные этого

@@ -177,7 +177,7 @@ String WIFICONNECT::scan(boolean Async) {
 	 _net +="\"pass\":\""; // Добавим ключ pass текущей сети
 	 _net += (WiFi.encryptionType(i) == ENC_TYPE_NONE) ? "" : "*"; // Если сеть открыта
 	 _net += "\",";
-	 _net +="\"dmb\":";  // Добавим ключ dmb текущей сети
+	 _net +="\"dbm\":";  // Добавим ключ dmb текущей сети
 	 _net += WiFi.RSSI(i); // Добавим dmb текущей сети в список
 	 _net += "}"; // Закроем раздел текущей сети
 	 if (n != i+1) _net += ",\r\n"; // Если сеть не последняя добавим ,
