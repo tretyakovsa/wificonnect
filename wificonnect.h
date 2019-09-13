@@ -19,46 +19,50 @@ class WIFICONNECT : public ESP8266WiFiClass {
   // Инициализация
     void init(String ssid, String ssidPass, String ssidAP, String ssidApPass, String _ssidStart),
 	     init(String ssid, String ssidPass, String ssidAP, String ssidApPass),
+		 initIP(String staticIP, String ip, String subnet, String getway),
          start(), // Подключить к роутеру если не удачно выход в режим AP
          startSTA(), // Подключится к роутеру
 		 isConnect(), // Попыки подключится к роуетеру
          anotherDev(), // Подключение другого модуля к роутеру используя данные этого
 		 startAP(),  // Запустить точку доступа
 		 DNSRequest(), // Обработка DNS сервера в режиме AP
-         stop();
+         stop();       // Отключить WiFi
 
     String scan(boolean Async), // Получить список сетей в эфире
-	       network(),
-		   StringIP(),
-           getURL(String urls);
+	       network(),           // Список сетей json
+		   StringIP(),          // Получить IP адрес
+           getURL(String urls); // Отправить GET запрос по адресу
 
 
-    boolean modeSTA(),
-	        ssidStartOn(),
-            ssidOn();
+    boolean modeSTA(),          // Вернуть режим WiFi
+	        ssidStartOn(),      // Вернуть признак стартовая сеть найден
+            ssidOn();           // Вернуть признак стандартная сеть найден
 
   private:
-    uint8_t _cAttempts=120,
-            led;
-    String _ssid,
-           _ssidPass,
-		   _ssidAP,
-		   _ssidApPass,
-		   _ssidStart,
-		   _staticIP,
-		   _ip,
-           _subnet,
-           _getway,
-           _dns,
-           _emptyS,
-		   _net;
+    void    restartSTA(); // Подключится к роутеру
+    uint8_t _cAttempts=120,     // Количество попыток подключения 120 = 60 попыток
+            led;                // Cветодиод индикации процесса подключения
+    String _ssid,               // SSID сети
+           _ssidPass,           // Пароль SSID
+		   _ssidAP,             // SSID для точки доступа
+		   _ssidApPass,         // Пароль точки доступа
+		   _ssidStart,          // Стартовая сеть найдена
+		   _staticIP,           // Флаг статический IP
+		   _ip,                 // IP адрес
+           _subnet,             // Маска сети
+           _getway,             // Шлюз
+           _dns,                // DNS сервер
+           _emptyS,             // Пустая строка
+		   _net;                // Список сетей в формате JSON
+
     Ticker WiFiTimer;
 	DNSServer dnsServer;
 
 
     boolean  _StaAp,
 	         _ssidStartOn = false,
-             _ssidOn = false;
+             _ssidOn = false,
+			 _ssidFound = false;
     const String ssidS = "ssid",
                  ssidPassS   = "ssidPass",
                  checkboxIPS   = "checkboxIP",

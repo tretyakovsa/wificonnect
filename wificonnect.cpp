@@ -16,25 +16,31 @@ void WIFICONNECT::init(String ssid, String ssidPass, String ssidAP, String ssidA
 	_ssidApPass = ssidApPass;
 	_ssidStart = ssidStart;
 }
+
+void WIFICONNECT::initIP(String staticIP, String ip, String subnet, String getway){
+	 _staticIP=staticIP;           // Флаг статический IP
+     _ip=ip;                       // IP адрес
+     _subnet=subnet;               // Маска сети
+     _getway=_getway;              // Шлюз
+}
 void WIFICONNECT::start() {
 	scan(false);
 	if (ssidOn()){ // если в эфире найдена сеть _ssid
   startSTA();      // подключится к сети
-  //isConnect();
 
 	} else {
 		startAP(); // Иначе включить точку доступа
 	}
 	if (!_StaAp) startAP();
-	//WiFiTimer.attach_ms(20000, std::bind(&WIFICONNECT::stop, this));
+
 }
 
 void WIFICONNECT::startSTA() {
   WiFi.mode(WIFI_OFF);
-  //WiFi.setSleepMode(WIFI_NONE_SLEEP);
+  WiFi.setSleepMode(WIFI_NONE_SLEEP);
   WiFi.mode(WIFI_STA);
   WiFi.persistent(false);
-  WiFi.hostname ("test");
+  //WiFi.hostname ("test");
   String volume;
   if (_staticIP=="1") {
 	IPAddress staticIP;
@@ -45,13 +51,10 @@ void WIFICONNECT::startSTA() {
     if (_subnet != _emptyS) staticSubnet.fromString(_subnet);
 	WiFi.config (staticIP, staticGateway, staticSubnet);
   }
-  //Serial.println("Begin");
   if (_ssid == _emptyS && _ssidPass == _emptyS) {
-	  //Serial.println("empty");
     WiFi.begin();
   }
   else {
-	  //Serial.println("pass");
     WiFi.begin(_ssid.c_str(), _ssidPass.c_str());
   }
   isConnect();
@@ -65,30 +68,39 @@ void WIFICONNECT::startSTA() {
 }
 // Запустить точку доступа
 void WIFICONNECT::startAP() {
- IPAddress apIP(192, 168, 4, 1);
+  IPAddress apIP(192, 168, 4, 1);
   IPAddress staticGateway(192, 168, 4, 1);
   IPAddress staticSubnet(255, 255, 255, 0);
   WiFi.softAPConfig(apIP, staticGateway, staticSubnet);
   WiFi.softAP(_ssidAP.c_str(), _ssidApPass.c_str());
   WiFi.mode(WIFI_AP);
+  _ip = WiFi.softAPIP().toString();
   dnsServer.start(53, "*", apIP);
+  WiFiTimer.attach_ms(10000, std::bind(&WIFICONNECT::restartSTA, this));
    _StaAp=false;
 }
 // Обработка DNS сервера в режиме AP
 void WIFICONNECT::DNSRequest() {
-	//if (!_StaAp)
+    if (_ssidFound){ // если в эфире найдена сеть _ssid
+    _ssidFound = false;
+	ESP.restart();
+	}
 		dnsServer.processNextRequest();
 }
 
 void WIFICONNECT::stop() {
-	//if (_ssidStartOn){
-	//	WiFi.mode(WIFI_OFF);
-	//anotherDev();
-	//}
-	//else {scan(true);}
-	scan(true);
-}
 
+}
+void WIFICONNECT::restartSTA(){
+	//Serial.print(".");
+	scan(true);
+	if (ssidOn()){ // если в эфире найдена сеть _ssid
+	WiFi.mode(WIFI_OFF);
+	//ESP.restart();
+	_ssidFound= true;
+	WiFiTimer.detach();
+	}
+}
 
 String WIFICONNECT::StringIP(){
 	return _ip;
@@ -135,11 +147,9 @@ void WIFICONNECT::isConnect() {
    while (--tries && WiFi.status() != WL_CONNECTED)
   {
     delay(500);
-    //Serial.print(".");
-	//Serial.println(WiFi.status());
-  }
-  //Serial.println(WiFi.status());
+	if (WiFi.status() == WL_CONNECT_FAILED) tries=1;
 
+  }
 }
 
 boolean WIFICONNECT::modeSTA(){
@@ -157,22 +167,19 @@ String WIFICONNECT::scan(boolean Async) {
 	//Serial.println(n);
   switch (n) {
     case -2: // Не запущено
-    //Serial.println("SkanStart");
       WiFi.scanNetworks(true, true);
       return _net;
       break;
     case -1: // Выполняется
-    //Serial.println("SkanWork");
       return _net;
       break;
     default:
-	//Serial.println("SkanUpdate");
      _net="{\"networks\":["; // Начало строки для списка сетей
  for (uint8_t i = 0; i < n; i++) { // Получаем все сети по порядку
 	 _net +="{\"ssid\":\""; // Начало раздела ключей отдельной сети
 	 String ssid = WiFi.SSID(i); // Добавим ключ ssid текущей сети
-	 if (ssid == _ssid) _ssidOn=true; // Если сеть которую ищем найдена поднимим флаг
-	 if (ssid == _ssidStart) _ssidStartOn=true; // Если сеть которую ищем найдена поднимим флаг
+	 if (ssid == _ssid) _ssidOn=true; // Если основная сеть которую ищем найдена поднимим флаг
+	 if (ssid == _ssidStart) _ssidStartOn=true; // Если стартовая сеть которую ищем найдена поднимим флаг
 	 _net += ssid + "\","; // Добавим ssid текущей сети в список
 	 _net +="\"pass\":\""; // Добавим ключ pass текущей сети
 	 _net += (WiFi.encryptionType(i) == ENC_TYPE_NONE) ? "" : "*"; // Если сеть открыта
