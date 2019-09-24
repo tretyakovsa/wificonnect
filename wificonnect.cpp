@@ -60,10 +60,7 @@ void WIFICONNECT::startSTA() {
   isConnect();
     WiFi.setAutoConnect(true);
     WiFi.setAutoReconnect(true);
-	if (WiFi.status()== 3) {
-		_ip = localIP().toString();
-		_StaAp=true;
-		}
+
 
 }
 // Запустить точку доступа
@@ -80,7 +77,7 @@ void WIFICONNECT::startAP() {
    _StaAp=false;
 }
 // Обработка DNS сервера в режиме AP
-void WIFICONNECT::DNSRequest() {
+void WIFICONNECT::loop() {
     if (_ssidFound){ // если в эфире найдена сеть _ssid
     _ssidFound = false;
 	ESP.restart();
@@ -103,6 +100,11 @@ void WIFICONNECT::restartSTA(){
 }
 
 String WIFICONNECT::StringIP(){
+	if (modeSTA()){
+		_ip = localIP().toString();
+	} else
+	_ip = WiFi.softAPIP().toString();
+
 	return _ip;
 }
 // Отправить данные роутера другому модулю ssid ssidPass хранят данные роутера
@@ -150,6 +152,10 @@ void WIFICONNECT::isConnect() {
 	if (WiFi.status() == WL_CONNECT_FAILED) tries=1;
 
   }
+  if (WiFi.status()== 3) {
+		_ip = localIP().toString();
+		_StaAp=true;
+		}
 }
 
 boolean WIFICONNECT::modeSTA(){
