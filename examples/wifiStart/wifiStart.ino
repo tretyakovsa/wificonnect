@@ -16,6 +16,6 @@ void setup() {
 }
 
 void loop() {
-MyWiFi.DNSRequest(); // DNS в режиме AP
+MyWiFi.loop(); // DNS в режиме AP
 }
 
