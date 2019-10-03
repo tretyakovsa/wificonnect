@@ -63,7 +63,8 @@ class WIFICONNECT : public ESP8266WiFiClass {
     boolean  _StaAp,
 	         _ssidStartOn = false,
              _ssidOn = false,
-			 _ssidFound = false;
+			 _ssidFound = false,
+			 _ssidPassEr = false;
     const String ssidS = "ssid",
                  ssidPassS   = "ssidPass",
                  checkboxIPS   = "checkboxIP",

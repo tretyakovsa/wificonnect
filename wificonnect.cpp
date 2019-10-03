@@ -41,7 +41,7 @@ void WIFICONNECT::startSTA() {
   WiFi.mode(WIFI_STA);
   WiFi.persistent(false);
   //WiFi.hostname ("test");
-  String volume;
+  //String volume;
   if (_staticIP=="1") {
 	IPAddress staticIP;
     if (_ip != _emptyS) staticIP.fromString(_ip);
@@ -73,12 +73,12 @@ void WIFICONNECT::startAP() {
   WiFi.mode(WIFI_AP);
   _ip = WiFi.softAPIP().toString();
   dnsServer.start(53, "*", apIP);
-  WiFiTimer.attach_ms(10000, std::bind(&WIFICONNECT::restartSTA, this));
+  if (!_ssidPassEr)  WiFiTimer.attach_ms(10000, std::bind(&WIFICONNECT::restartSTA, this));
    _StaAp=false;
 }
 // Обработка DNS сервера в режиме AP
 void WIFICONNECT::loop() {
-    if (_ssidFound){ // если в эфире найдена сеть _ssid
+    if (_ssidFound && _ssidPassEr){ // если в эфире найдена сеть _ssid
     _ssidFound = false;
 	ESP.restart();
 	}
@@ -149,7 +149,9 @@ void WIFICONNECT::isConnect() {
    while (--tries && WiFi.status() != WL_CONNECTED)
   {
     delay(500);
-	if (WiFi.status() == WL_CONNECT_FAILED) tries=1;
+	if (WiFi.status() == WL_CONNECT_FAILED){
+	_ssidPassEr= true;
+	tries=1;}
 
   }
   if (WiFi.status()== 3) {
