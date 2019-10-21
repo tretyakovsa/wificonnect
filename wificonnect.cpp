@@ -23,6 +23,9 @@ void WIFICONNECT::initIP(String staticIP, String ip, String subnet, String getwa
      _subnet=subnet;               // Маска сети
      _getway=_getway;              // Шлюз
 }
+void WIFICONNECT::setHostname(String hostname){
+	_hostname = hostname;
+}
 void WIFICONNECT::start() {
 	scan(false);
 	if (ssidOn()){ // если в эфире найдена сеть _ssid
@@ -40,7 +43,7 @@ void WIFICONNECT::startSTA() {
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
   WiFi.mode(WIFI_STA);
   WiFi.persistent(false);
-  //WiFi.hostname ("test");
+  if (_hostname!="")WiFi.hostname (_hostname);
   //String volume;
   if (_staticIP=="1") {
 	IPAddress staticIP;

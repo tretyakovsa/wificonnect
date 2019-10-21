@@ -26,7 +26,8 @@ class WIFICONNECT : public ESP8266WiFiClass {
          anotherDev(), // Подключение другого модуля к роутеру используя данные этого
 		 startAP(),  // Запустить точку доступа
 		 loop(), // Обработка DNS сервера в режиме AP
-         stop();       // Отключить WiFi
+         stop(),       // Отключить WiFi
+		 setHostname(String hostname);
 
     String scan(boolean Async), // Получить список сетей в эфире
 	       network(),           // Список сетей json
@@ -75,6 +76,7 @@ class WIFICONNECT : public ESP8266WiFiClass {
                  ssidAPS   = "ssidAP",
                  ssidApPassS   = "ssidApPass",
                  ssidStartS = "ssidStart";
+
 };
 
 #endif // WC_H
