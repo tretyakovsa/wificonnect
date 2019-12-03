@@ -14,7 +14,12 @@
 #endif
 
 
+
+#if defined(ESP8266)
 class WIFICONNECT : public ESP8266WiFiClass {
+#else
+class WIFICONNECT : public WiFiClass {
+#endif
   public:
   // Инициализация
     void init(String ssid, String ssidPass, String ssidAP, String ssidApPass, String ssidStart),
@@ -32,6 +37,8 @@ class WIFICONNECT : public ESP8266WiFiClass {
     String scan(boolean Async), // Получить список сетей в эфире
 	       network(),           // Список сетей json
 		   StringIP(),          // Получить IP адрес
+		   StringGatewayIP(),
+		   StringSubnetMask(),
            getURL(String urls); // Отправить GET запрос по адресу
 
 

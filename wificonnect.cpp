@@ -21,7 +21,7 @@ void WIFICONNECT::initIP(String staticIP, String ip, String subnet, String getwa
 	 _staticIP=staticIP;           // Флаг статический IP
      _ip=ip;                       // IP адрес
      _subnet=subnet;               // Маска сети
-     _getway=_getway;              // Шлюз
+     _getway=getway;              // Шлюз
 }
 void WIFICONNECT::setHostname(String hostname){
 	_hostname = hostname;
@@ -39,11 +39,7 @@ void WIFICONNECT::start() {
 }
 
 void WIFICONNECT::startSTA() {
-  WiFi.mode(WIFI_OFF);
-  WiFi.setSleepMode(WIFI_NONE_SLEEP);
-  WiFi.mode(WIFI_STA);
-  WiFi.persistent(false);
-  if (_hostname!="")WiFi.hostname (_hostname);
+  if (_hostname!="") WiFi.hostname (_hostname);
   //String volume;
   if (_staticIP=="1") {
 	IPAddress staticIP;
@@ -54,7 +50,16 @@ void WIFICONNECT::startSTA() {
     if (_subnet != _emptyS) staticSubnet.fromString(_subnet);
 	WiFi.config (staticIP, staticGateway, staticSubnet);
   }
+  WiFi.mode(WIFI_OFF);
+  WiFi.setSleepMode(WIFI_NONE_SLEEP);
+  WiFi.mode(WIFI_STA);
+  WiFi.persistent(false);
+  //Serial.print("_ssid=");
+  //Serial.println(_ssid);
+  //Serial.print("_ssidPass=");
+  //Serial.println(_ssidPass);
   if (_ssid == _emptyS && _ssidPass == _emptyS) {
+	  //Serial.println("HUL");
     WiFi.begin();
   }
   else {
@@ -63,26 +68,32 @@ void WIFICONNECT::startSTA() {
   isConnect();
     WiFi.setAutoConnect(true);
     WiFi.setAutoReconnect(true);
-
+           //sendSetup(ipS, WiFi.localIP().toString());
+           //sendSetup(getwayS, WiFi.gatewayIP().toString());
+           //sendSetup(subnetS, WiFi.subnetMask().toString());
 
 }
 // Запустить точку доступа
 void WIFICONNECT::startAP() {
   IPAddress apIP(192, 168, 4, 1);
-  IPAddress staticGateway(192, 168, 4, 1);
-  IPAddress staticSubnet(255, 255, 255, 0);
-  WiFi.softAPConfig(apIP, staticGateway, staticSubnet);
+  //IPAddress staticGateway(192, 168, 4, 1);
+  //IPAddress staticSubnet(255, 255, 255, 0);
+  //WiFi.softAPConfig(apIP, staticGateway, staticSubnet);
   WiFi.softAP(_ssidAP.c_str(), _ssidApPass.c_str());
   WiFi.mode(WIFI_AP);
   _ip = WiFi.softAPIP().toString();
   dnsServer.start(53, "*", apIP);
-  if (!_ssidPassEr)  WiFiTimer.attach_ms(10000, std::bind(&WIFICONNECT::restartSTA, this));
+   if (_ssid != _emptyS) {
+	   //Serial.println(_ssid);
+  if (!_ssidPassEr)  WiFiTimer.attach_ms(60000*5, std::bind(&WIFICONNECT::restartSTA, this));
    _StaAp=false;
+   }
 }
 // Обработка DNS сервера в режиме AP
 void WIFICONNECT::loop() {
-    if (_ssidFound && _ssidPassEr){ // если в эфире найдена сеть _ssid
-    _ssidFound = false;
+    //if (_ssidFound && _ssidPassEr){ // если в эфире найдена сеть _ssid
+	if (_ssidFound ){ // если в эфире найдена сеть _ssid
+    //_ssidFound = false;
 	ESP.restart();
 	}
 		dnsServer.processNextRequest();
@@ -92,11 +103,10 @@ void WIFICONNECT::stop() {
 
 }
 void WIFICONNECT::restartSTA(){
-	//Serial.print(".");
+	//Serial.println("restartSTA");
 	scan(true);
 	if (ssidOn()){ // если в эфире найдена сеть _ssid
 	WiFi.mode(WIFI_OFF);
-	//ESP.restart();
 	_ssidFound= true;
 	WiFiTimer.detach();
 	}
@@ -109,6 +119,22 @@ String WIFICONNECT::StringIP(){
 	_ip = WiFi.softAPIP().toString();
 
 	return _ip;
+}
+String WIFICONNECT::StringGatewayIP(){
+	if (modeSTA()){
+		_getway = gatewayIP().toString();
+	} else
+	_getway = WiFi.softAPIP().toString();
+
+	return _getway;
+}
+String WIFICONNECT::StringSubnetMask(){
+	if (modeSTA()){
+		_subnet = subnetMask().toString();
+	} else
+	_subnet = "255.0.0.0";
+
+	return _subnet;
 }
 // Отправить данные роутера другому модулю ssid ssidPass хранят данные роутера
 // Выполнять только когда модуль подключен к нужной сети
