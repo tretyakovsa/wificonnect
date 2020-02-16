@@ -8,9 +8,9 @@ const String ssidApPass = "";
 void setup() {
   Serial.begin(115200);
   Serial.println();
-  MyWiFi.init(ssid, ssidPass, ssidAP, ssidApPass); // Оснавные данные для wifi
+  MyWiFi.init(ssid, ssidPass, ssidAP, ssidApPass); // Основные данные для wifi
   MyWiFi.start();        // Запустим WiFi
-  if (MyWiFi.modeSTA()) {
+  if (MyWiFi.modeSTA()) { // Если подключились
     Serial.println("Connect "+ssid);
   } else  Serial.println("AP ="+ssidAP);
 }
