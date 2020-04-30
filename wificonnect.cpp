@@ -39,7 +39,11 @@ void WIFICONNECT::start() {
 }
 
 void WIFICONNECT::startSTA() {
+	#if defined(ESP8266)
   if (_hostname!="") WiFi.hostname (_hostname);
+  #else
+  if (_hostname!="") WiFi.setHostname (_hostname.c_str());
+#endif
   //String volume;
   if (_staticIP=="1") {
 	IPAddress staticIP;
@@ -51,7 +55,11 @@ void WIFICONNECT::startSTA() {
 	WiFi.config (staticIP, staticGateway, staticSubnet);
   }
   WiFi.mode(WIFI_OFF);
+  	#if defined(ESP8266)
   WiFi.setSleepMode(WIFI_NONE_SLEEP);
+  #else
+  //WiFi.setSleepMode(WIFI_NONE_SLEEP);
+#endif
   WiFi.mode(WIFI_STA);
   WiFi.persistent(false);
   //Serial.print("_ssid=");
@@ -85,7 +93,11 @@ void WIFICONNECT::startAP() {
   dnsServer.start(53, "*", apIP);
    if (_ssid != _emptyS) {
 	   //Serial.println(_ssid);
+	     	#if defined(ESP8266)
   if (!_ssidPassEr)  WiFiTimer.attach_ms(60000*5, std::bind(&WIFICONNECT::restartSTA, this));
+  #else
+  //if (!_ssidPassEr)  WiFiTimer.attach_ms(60000*5, std::bind(&WIFICONNECT::restartSTA, this));
+#endif
    _StaAp=false;
    }
 }
@@ -219,7 +231,11 @@ String WIFICONNECT::scan(boolean Async) {
 	 if (ssid == _ssidStart) _ssidStartOn=true; // Если стартовая сеть которую ищем найдена поднимим флаг
 	 _net += ssid + "\","; // Добавим ssid текущей сети в список
 	 _net +="\"pass\":\""; // Добавим ключ pass текущей сети
-	 _net += (WiFi.encryptionType(i) == ENC_TYPE_NONE) ? "" : "*"; // Если сеть открыта
+	   	#if defined(ESP8266)
+  _net += (WiFi.encryptionType(i) == ENC_TYPE_NONE) ? "" : "*"; // Если сеть открыта
+  #else
+  _net += (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? "" : "*"; // Если сеть открыта
+#endif
 	 _net += "\",";
 	 _net +="\"dbm\":";  // Добавим ключ dmb текущей сети
 	 _net += WiFi.RSSI(i); // Добавим dmb текущей сети в список
