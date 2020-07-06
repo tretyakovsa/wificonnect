@@ -1,5 +1,5 @@
 #include "wificonnect.h"
-
+// Инициализация данных сети
 void WIFICONNECT::init(String ssid, String ssidPass, String ssidAP, String ssidApPass) {
 	WiFi.mode(WIFI_OFF);
 	_ssid = ssid;
@@ -8,6 +8,7 @@ void WIFICONNECT::init(String ssid, String ssidPass, String ssidAP, String ssidA
 	_ssidApPass = ssidApPass;
 	_ssidStart = "";
 }
+// Инициализация данных сети с автоподключением
 void WIFICONNECT::init(String ssid, String ssidPass, String ssidAP, String ssidApPass, String ssidStart) {
 	WiFi.mode(WIFI_OFF);
 	_ssid = ssid;
@@ -16,13 +17,14 @@ void WIFICONNECT::init(String ssid, String ssidPass, String ssidAP, String ssidA
 	_ssidApPass = ssidApPass;
 	_ssidStart = ssidStart;
 }
-
+// Инициализация параметров сети с ручными настройками 
 void WIFICONNECT::initIP(String staticIP, String ip, String subnet, String getway){
 	 _staticIP=staticIP;           // Флаг статический IP
      _ip=ip;                       // IP адрес
      _subnet=subnet;               // Маска сети
      _getway=getway;              // Шлюз
 }
+// задать имя устройства в сети
 void WIFICONNECT::setHostname(String hostname){
 	_hostname = hostname;
 }
@@ -44,7 +46,6 @@ void WIFICONNECT::startSTA() {
   #else
   if (_hostname!="") WiFi.setHostname (_hostname.c_str());
 #endif
-  //String volume;
   if (_staticIP=="1") {
 	IPAddress staticIP;
     if (_ip != _emptyS) staticIP.fromString(_ip);
@@ -62,12 +63,7 @@ void WIFICONNECT::startSTA() {
 #endif
   WiFi.mode(WIFI_STA);
   WiFi.persistent(false);
-  //Serial.print("_ssid=");
-  //Serial.println(_ssid);
-  //Serial.print("_ssidPass=");
-  //Serial.println(_ssidPass);
   if (_ssid == _emptyS && _ssidPass == _emptyS) {
-	  //Serial.println("HUL");
     WiFi.begin();
   }
   else {
@@ -84,17 +80,16 @@ void WIFICONNECT::startSTA() {
 // Запустить точку доступа
 void WIFICONNECT::startAP() {
   IPAddress apIP(192, 168, 4, 1);
-  //IPAddress staticGateway(192, 168, 4, 1);
-  //IPAddress staticSubnet(255, 255, 255, 0);
-  //WiFi.softAPConfig(apIP, staticGateway, staticSubnet);
+  IPAddress staticGateway(192, 168, 4, 1);
+  IPAddress staticSubnet(255, 255, 255, 0);
+  WiFi.softAPConfig(apIP, staticGateway, staticSubnet);
   WiFi.softAP(_ssidAP.c_str(), _ssidApPass.c_str());
   WiFi.mode(WIFI_AP);
   _ip = WiFi.softAPIP().toString();
   dnsServer.start(53, "*", apIP);
    if (_ssid != _emptyS) {
-	   //Serial.println(_ssid);
-	     	#if defined(ESP8266)
-  if (!_ssidPassEr)  WiFiTimer.attach_ms(60000*5, std::bind(&WIFICONNECT::restartSTA, this));
+#if defined(ESP8266)
+  if (!_ssidPassEr) WiFiTimer.attach_ms(60000*2, std::bind(&WIFICONNECT::restartSTA, this));
   #else
   //if (!_ssidPassEr)  WiFiTimer.attach_ms(60000*5, std::bind(&WIFICONNECT::restartSTA, this));
 #endif
@@ -103,9 +98,7 @@ void WIFICONNECT::startAP() {
 }
 // Обработка DNS сервера в режиме AP
 void WIFICONNECT::loop() {
-    //if (_ssidFound && _ssidPassEr){ // если в эфире найдена сеть _ssid
 	if (_ssidFound ){ // если в эфире найдена сеть _ssid
-    //_ssidFound = false;
 	ESP.restart();
 	}
 		dnsServer.processNextRequest();
@@ -115,7 +108,6 @@ void WIFICONNECT::stop() {
 
 }
 void WIFICONNECT::restartSTA(){
-	//Serial.println("restartSTA");
 	scan(true);
 	if (ssidOn()){ // если в эфире найдена сеть _ssid
 	WiFi.mode(WIFI_OFF);
@@ -227,6 +219,7 @@ String WIFICONNECT::scan(boolean Async) {
  for (uint8_t i = 0; i < n; i++) { // Получаем все сети по порядку
 	 _net +="{\"ssid\":\""; // Начало раздела ключей отдельной сети
 	 String ssid = WiFi.SSID(i); // Добавим ключ ssid текущей сети
+	 //Serial.println(ssid);
 	 if (ssid == _ssid) _ssidOn=true; // Если основная сеть которую ищем найдена поднимим флаг
 	 if (ssid == _ssidStart) _ssidStartOn=true; // Если стартовая сеть которую ищем найдена поднимим флаг
 	 _net += ssid + "\","; // Добавим ssid текущей сети в список
