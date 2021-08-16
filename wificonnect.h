@@ -1,6 +1,5 @@
 #ifndef WIFICONNECT_H
 #define WIFICONNECT_H
-#include <Ticker.h>
 #include <DNSServer.h>
 #if defined(ESP8266)
   //#pragma message("Compiling for ESP8266")
@@ -12,9 +11,9 @@
   #include <WiFi.h>
   #include <HTTPClient.h>
 #endif
+#include <Ticker.h>
 
-
-
+typedef std::function<void()> WIFICONNECTCb;
 #if defined(ESP8266)
 class WIFICONNECT : public ESP8266WiFiClass {
 #else
@@ -32,6 +31,8 @@ class WIFICONNECT : public WiFiClass {
 		 startAP(),  // Запустить точку доступа
 		 loop(), // Обработка DNS сервера в режиме AP
          stop(),       // Отключить WiFi
+		 searchStart(String ssidStart),
+		 setCallback(WIFICONNECTCb pcb),
 		 setHostname(String hostname);
 
     String scan(boolean Async), // Получить список сетей в эфире
@@ -39,6 +40,7 @@ class WIFICONNECT : public WiFiClass {
 		   StringIP(),          // Получить IP адрес
 		   StringGatewayIP(),
 		   StringSubnetMask(),
+		   getURL(String urls, boolean norequest),
            getURL(String urls); // Отправить GET запрос по адресу
 
 
@@ -47,7 +49,8 @@ class WIFICONNECT : public WiFiClass {
             ssidOn();           // Вернуть признак стандартная сеть найден
 
   private:
-    void    restartSTA(); // Подключится к роутеру
+    void    restartSTA(), // Подключится к роутеру
+	        onStart(); // Подключится к внешнему устройству
     uint8_t _cAttempts=120,     // Количество попыток подключения 120 = 60 попыток
             led;                // Cветодиод индикации процесса подключения
     String _ssid,               // SSID сети
@@ -63,8 +66,10 @@ class WIFICONNECT : public WiFiClass {
            _emptyS,             // Пустая строка
 		   _hostname,           //
 		   _net;                // Список сетей в формате JSON
-
+    
+	WIFICONNECTCb _pcb;
     Ticker WiFiTimer;
+	Ticker WiFiTimer1;
 	DNSServer dnsServer;
 
 
