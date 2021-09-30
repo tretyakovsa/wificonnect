@@ -95,7 +95,8 @@ void WIFICONNECT::startAP() {
   IPAddress staticGateway(192, 168, 4, 1);
   IPAddress staticSubnet(255, 255, 255, 0);
   WiFi.softAPConfig(apIP, staticGateway, staticSubnet);
-  WiFi.softAP(_ssidAP.c_str(), _ssidApPass.c_str());
+  _Channel = random(1, 11);
+  WiFi.softAP(_ssidAP.c_str(), _ssidApPass.c_str(),_Channel);
   WiFi.mode(WIFI_AP);
   _ip = WiFi.softAPIP().toString();
   dnsServer.start(53, "*", apIP);
@@ -156,6 +157,11 @@ String WIFICONNECT::StringIP() {
 
   return _ip;
 }
+
+uint8_t WIFICONNECT::getChannel() {
+  return _Channel;
+}
+
 String WIFICONNECT::StringGatewayIP() {
   if (modeSTA()) {
     _getway = gatewayIP().toString();
@@ -255,10 +261,10 @@ String WIFICONNECT::scan(boolean Async) {
       for (uint8_t i = 0; i < n; i++) { // Получаем все сети по порядку
         _net += "{\"ssid\":\""; // Начало раздела ключей отдельной сети
         String ssid = WiFi.SSID(i); // Добавим ключ ssid текущей сети
-        //Serial.println(ssid);
-        if (ssid == _ssid) _ssidOn = true; // Если основная сеть которую ищем найдена поднимим флаг
-        if (ssid.indexOf(_ssidStart) == 0 && _ssidStart != _emptyS) { // нужно соханить шаблон
-		
+        if (ssid == _ssid) {_ssidOn = true; // Если основная сеть которую ищем найдена поднимим флаг
+		_Channel = WiFi.channel(i);
+		}
+        if (ssid.indexOf(_ssidStart) == 0 && _ssidStart != _emptyS) { // нужно соханить шаблон		
           _ssidStart = ssid;
           _ssidStartOn = true; // Если стартовая сеть которую ищем найдена поднимим флаг
         }

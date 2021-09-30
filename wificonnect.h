@@ -42,6 +42,8 @@ class WIFICONNECT : public WiFiClass {
 		   StringSubnetMask(),
 		   getURL(String urls, boolean norequest),
            getURL(String urls); // Отправить GET запрос по адресу
+		   
+   uint8_t getChannel();		   
 
 
     boolean modeSTA(),          // Вернуть режим WiFi
@@ -52,7 +54,8 @@ class WIFICONNECT : public WiFiClass {
     void    restartSTA(), // Подключится к роутеру
 	        onStart(); // Подключится к внешнему устройству
     uint8_t _cAttempts=120,     // Количество попыток подключения 120 = 60 попыток
-            led;                // Cветодиод индикации процесса подключения
+            led,                // Cветодиод индикации процесса подключения
+			_Channel;
     String _ssid,               // SSID сети
            _ssidPass,           // Пароль SSID
 		   _ssidAP,             // SSID для точки доступа
