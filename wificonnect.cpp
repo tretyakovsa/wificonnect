@@ -316,3 +316,54 @@ String WIFICONNECT::getURL(String urls, boolean norequest) {
 String WIFICONNECT::getURL(String urls) {
   return getURL(urls, false);
 }
+
+
+void WIFICONNECT::restoreCallback(WIFICONNECTCb abc) {
+  _abc = abc;
+}
+void WIFICONNECT::endRestore() {
+  saveRestartCon(0);
+}
+void WIFICONNECT::beginRestore(uint8_t n){
+  if (ESP.getResetReason() == "External System") {
+    if (ESP.rtcUserMemoryRead(0, (uint32_t*) &rtcData, sizeof(rtcData))) {
+      uint32_t crcOfData = calculateCRC32((uint8_t*) &rtcData.data[0], sizeof(rtcData.data));
+      if (crcOfData != rtcData.crc32) {
+        saveRestartCon(0);
+      } else {
+        uint8_t nnn = rtcData.data[3];
+        Serial.println(nnn);  
+        if (nnn >= n) {
+          saveRestartCon(0);
+        if (_abc) _abc();
+        } else saveRestartCon(nnn + 1);
+
+      }
+    }
+  }
+}
+void WIFICONNECT::saveRestartCon(uint8_t n){
+	 for (size_t i = 0; i < sizeof(rtcData.data); i++) {
+    rtcData.data[i] = n;
+  }
+  rtcData.crc32 = calculateCRC32((uint8_t*) &rtcData.data[0], sizeof(rtcData.data));
+  ESP.rtcUserMemoryWrite(0, (uint32_t*) &rtcData, sizeof(rtcData));
+}
+
+uint32_t WIFICONNECT::calculateCRC32(const uint8_t *data, size_t length){
+	  uint32_t crc = 0xffffffff;
+  while (length--) {
+    uint8_t c = *data++;
+    for (uint32_t i = 0x80; i > 0; i >>= 1) {
+      bool bit = crc & 0x80000000;
+      if (c & i) {
+        bit = !bit;
+      }
+      crc <<= 1;
+      if (bit) {
+        crc ^= 0x04c11db7;
+      }
+    }
+  }
+  return crc;
+}

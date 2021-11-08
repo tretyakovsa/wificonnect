@@ -33,7 +33,10 @@ class WIFICONNECT : public WiFiClass {
          stop(),       // Отключить WiFi
 		 searchStart(String ssidStart),
 		 setCallback(WIFICONNECTCb pcb),
-		 setHostname(String hostname);
+		 setHostname(String hostname),
+		 beginRestore(uint8_t n),
+		 endRestore(),
+		 restoreCallback(WIFICONNECTCb abc);
 
     String scan(boolean Async), // Получить список сетей в эфире
 	       network(),           // Список сетей json
@@ -49,9 +52,11 @@ class WIFICONNECT : public WiFiClass {
     boolean modeSTA(),          // Вернуть режим WiFi
 	        ssidStartOn(),      // Вернуть признак стартовая сеть найден
             ssidOn();           // Вернуть признак стандартная сеть найден
+			
 
   private:
     void    restartSTA(), // Подключится к роутеру
+            saveRestartCon(uint8_t n),
 	        onStart(); // Подключится к внешнему устройству
     uint8_t _cAttempts=120,     // Количество попыток подключения 120 = 60 попыток
             led,                // Cветодиод индикации процесса подключения
@@ -69,8 +74,9 @@ class WIFICONNECT : public WiFiClass {
            _emptyS,             // Пустая строка
 		   _hostname,           //
 		   _net;                // Список сетей в формате JSON
-    
+    uint32_t calculateCRC32(const uint8_t *data, size_t length);
 	WIFICONNECTCb _pcb;
+	WIFICONNECTCb _abc;
     Ticker WiFiTimer;
 	Ticker WiFiTimer1;
 	DNSServer dnsServer;
@@ -91,6 +97,10 @@ class WIFICONNECT : public WiFiClass {
                  ssidAPS   = "ssidAP",
                  ssidApPassS   = "ssidApPass",
                  ssidStartS = "ssidStart";
+    struct {
+                 uint32_t crc32;
+                 byte data[4];
+                 } rtcData;
 
 };
 
