@@ -41,7 +41,7 @@ void WIFICONNECT::start() {
 #if defined(ESP8266)
         WiFiTimer1.attach_ms(10000, std::bind(&WIFICONNECT::onStart, this));
 #else
-        //WiFiTimer1.attach_ms(10000, std::bind(&WIFICONNECT::onStart, this));
+      //WiFiTimer1.attach(10, std::bind(&WIFICONNECT::onStart, this));
 #endif
     }
   } else {
@@ -91,15 +91,20 @@ void WIFICONNECT::startSTA() {
 }
 // Запустить точку доступа
 void WIFICONNECT::startAP() {
+	
   IPAddress apIP(192, 168, 4, 1);
+  //IPAddress apIP(8,8,4,4);
   IPAddress staticGateway(192, 168, 4, 1);
+  //IPAddress staticGateway(8,8,4,4);
   IPAddress staticSubnet(255, 255, 255, 0);
-  WiFi.softAPConfig(apIP, staticGateway, staticSubnet);
+  IPAddress apIPdns(8,8,4,4);
+  WiFi.mode(WIFI_AP);
   _Channel = random(1, 11);
   WiFi.softAP(_ssidAP.c_str(), _ssidApPass.c_str(),_Channel);
-  WiFi.mode(WIFI_AP);
+  WiFi.softAPConfig(apIP, staticGateway, staticSubnet);
+  dnsServer.start(53, "*", apIPdns);  
   _ip = WiFi.softAPIP().toString();
-  dnsServer.start(53, "*", apIP);
+  
   if (_ssid != _emptyS) {
 #if defined(ESP8266)
     if (!_ssidPassEr) WiFiTimer.attach_ms(60000 * 2, std::bind(&WIFICONNECT::restartSTA, this));
@@ -324,6 +329,8 @@ void WIFICONNECT::restoreCallback(WIFICONNECTCb abc) {
 void WIFICONNECT::endRestore() {
   saveRestartCon(0);
 }
+
+#if defined(ESP8266)
 void WIFICONNECT::beginRestore(uint8_t n){
   if (ESP.getResetReason() == "External System") {
     if (ESP.rtcUserMemoryRead(0, (uint32_t*) &rtcData, sizeof(rtcData))) {
@@ -342,6 +349,10 @@ void WIFICONNECT::beginRestore(uint8_t n){
     }
   }
 }
+#else
+void WIFICONNECT::beginRestore(uint8_t n){}
+#endif
+#if defined(ESP8266)
 void WIFICONNECT::saveRestartCon(uint8_t n){
 	 for (size_t i = 0; i < sizeof(rtcData.data); i++) {
     rtcData.data[i] = n;
@@ -349,6 +360,10 @@ void WIFICONNECT::saveRestartCon(uint8_t n){
   rtcData.crc32 = calculateCRC32((uint8_t*) &rtcData.data[0], sizeof(rtcData.data));
   ESP.rtcUserMemoryWrite(0, (uint32_t*) &rtcData, sizeof(rtcData));
 }
+#else
+void WIFICONNECT::saveRestartCon(uint8_t n){}
+#endif
+
 
 uint32_t WIFICONNECT::calculateCRC32(const uint8_t *data, size_t length){
 	  uint32_t crc = 0xffffffff;

@@ -14,6 +14,7 @@
 #include <Ticker.h>
 
 typedef std::function<void()> WIFICONNECTCb;
+
 #if defined(ESP8266)
 class WIFICONNECT : public ESP8266WiFiClass {
 #else
@@ -24,7 +25,7 @@ class WIFICONNECT : public WiFiClass {
     void init(String ssid, String ssidPass, String ssidAP, String ssidApPass, String ssidStart),
 	     init(String ssid, String ssidPass, String ssidAP, String ssidApPass),
 		 initIP(String staticIP, String ip, String subnet, String getway),
-         start(), // Подключить к роутеру если не удачно выход в режим AP
+         start(), // Подключить к роутеру, если не удачно - вход в режим AP
          startSTA(), // Подключится к роутеру
 		 isConnect(), // Попыки подключится к роуетеру
          anotherDev(), // Подключение другого модуля к роутеру используя данные этого
