@@ -302,6 +302,10 @@ boolean WIFICONNECT::ssidOn() {
   return _ssidOn;
 }
 
+boolean WIFICONNECT::modeETH() {
+  return false;
+}
+
 // ------------- Запрос на удаленный URL -----------------------------------------
 String WIFICONNECT::getURL(String urls, boolean norequest) {
   String answer;

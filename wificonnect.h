@@ -51,6 +51,7 @@ class WIFICONNECT : public WiFiClass {
 
 
     boolean modeSTA(),          // Вернуть режим WiFi
+	        modeETH(),
 	        ssidStartOn(),      // Вернуть признак стартовая сеть найден
             ssidOn();           // Вернуть признак стандартная сеть найден
 			
