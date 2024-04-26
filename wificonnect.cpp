@@ -33,7 +33,7 @@ void WIFICONNECT::setCallback(WIFICONNECTCb pcb) {
   _pcb = pcb;
 }
 void WIFICONNECT::start() {
-  scan(false);
+  //scan(false);
   scan(false);
   if (ssidOn()) { // если в эфире найдена сеть _ssid
     startSTA();      // подключится к сети
@@ -112,6 +112,7 @@ void WIFICONNECT::startAP() {
     //if (!_ssidPassEr)  WiFiTimer.attach_ms(60000*5, std::bind(&WIFICONNECT::restartSTA, this));
 #endif
     _StaAp = false;
+	_apOn = true;
   }
 }
 // Обработка DNS сервера в режиме AP
@@ -304,6 +305,9 @@ boolean WIFICONNECT::ssidOn() {
 
 boolean WIFICONNECT::modeETH() {
   return false;
+}
+boolean WIFICONNECT::modeAP() {
+  return  _apOn;
 }
 
 // ------------- Запрос на удаленный URL -----------------------------------------

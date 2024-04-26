@@ -52,6 +52,7 @@ class WIFICONNECT : public WiFiClass {
 
     boolean modeSTA(),          // Вернуть режим WiFi
 	        modeETH(),
+			modeAP(),
 	        ssidStartOn(),      // Вернуть признак стартовая сеть найден
             ssidOn();           // Вернуть признак стандартная сеть найден
 			
@@ -84,7 +85,8 @@ class WIFICONNECT : public WiFiClass {
 	DNSServer dnsServer;
 
 
-    boolean  _StaAp,
+    boolean  _StaAp= false,
+	         _apOn= false,
 	         _ssidStartOn = false,
              _ssidOn = false,
 			 _ssidFound = false,
