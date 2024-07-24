@@ -1,12 +1,13 @@
 #ifndef WIFICONNECT_H
 #define WIFICONNECT_H
-#include <DNSServer.h>
+
 #if defined(ESP8266)
   //#pragma message("Compiling for ESP8266")
   #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
-
+#include <DNSServer.h>
 #else
+	
   //#pragma message("Compiling for ESP32")
   #include <WiFi.h>
   #include <HTTPClient.h>
@@ -24,6 +25,7 @@ class WIFICONNECT : public WiFiClass {
   // Инициализация
     void init(String ssid, String ssidPass, String ssidAP, String ssidApPass, String ssidStart),
 	     init(String ssid, String ssidPass, String ssidAP, String ssidApPass),
+         initStaAndAP(),
 		 initIP(String staticIP, String ip, String subnet, String getway),
          start(), // Подключить к роутеру, если не удачно - вход в режим AP
          startSTA(), // Подключится к роутеру
@@ -82,10 +84,13 @@ class WIFICONNECT : public WiFiClass {
 	WIFICONNECTCb _abc;
     Ticker WiFiTimer;
 	Ticker WiFiTimer1;
+	#if defined(ESP8266)
 	DNSServer dnsServer;
-
+	#else
+    #endif
 
     boolean  _StaAp= false,
+	         _StaAndAp= false,
 	         _apOn= false,
 	         _ssidStartOn = false,
              _ssidOn = false,
