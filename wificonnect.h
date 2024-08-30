@@ -11,6 +11,7 @@
   //#pragma message("Compiling for ESP32")
   #include <WiFi.h>
   #include <HTTPClient.h>
+  #include <DNSServer.h>
 #endif
 #include <Ticker.h>
 
@@ -87,6 +88,7 @@ class WIFICONNECT : public WiFiClass {
 	#if defined(ESP8266)
 	DNSServer dnsServer;
 	#else
+	DNSServer dnsServer;
     #endif
 
     boolean  _StaAp= false,

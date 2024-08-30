@@ -111,6 +111,7 @@ void WIFICONNECT::startAP() {
   	#if defined(ESP8266)
 	dnsServer.start(53, "*", apIP);  
 	#else
+    dnsServer.start(53, "*", apIP); 
     #endif
   
   _ip = WiFi.softAPIP().toString();
@@ -133,6 +134,7 @@ void WIFICONNECT::loop() {
   	#if defined(ESP8266)
 	dnsServer.processNextRequest();
 	#else
+	dnsServer.processNextRequest();
     #endif
   
 }
